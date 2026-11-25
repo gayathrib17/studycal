@@ -49,10 +49,10 @@ Task cards (`TaskList.tsx`) carry two drag systems on separate elements:
 
 zustand v5: selectors must not return fresh arrays or objects (e.g. `s.tasks.filter(...)`). That loops renders. Select the stable value and derive outside.
 
-## Design rules (see README "Making it not look vibe-coded")
+## Design rules (see docs/DESIGN.md "Design principles")
 
 - Use the CSS tokens in `src/styles.css` (paper / forest palette, one accent, no purple, no gradients).
 - Lucide icons only, never emoji in the UI.
 - Fraunces for headings and numbers, DM Sans for everything else.
 - Shadows only on floating elements.
-- Keep README "Decisions and why" up to date when changing an approach.
+- Keep docs/DESIGN.md "Decisions and why" up to date when changing an approach. README.md is the public, user-facing page: keep it free of internal notes.
