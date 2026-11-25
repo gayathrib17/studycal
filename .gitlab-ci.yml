@@ -1,0 +1,34 @@
+# Builds studycal and publishes it with GitLab Pages.
+# The site appears at https://<username>.gitlab.io/<project>/ (see Deploy > Pages in the project).
+# Tests and the type check must pass before anything is deployed.
+
+image: node:24-alpine
+
+cache:
+  key:
+    files: [package-lock.json]
+  paths: [.npm/]
+
+stages: [test, deploy]
+
+variables:
+  npm_config_cache: '$CI_PROJECT_DIR/.npm'
+
+test:
+  stage: test
+  script:
+    - npm ci --prefer-offline
+    - npm run typecheck
+    - npm test
+
+pages:
+  stage: deploy
+  script:
+    - npm ci --prefer-offline
+    - npm run build
+    # GitLab Pages serves the "public" folder.
+    - rm -rf public && mv dist public
+  artifacts:
+    paths: [public]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
