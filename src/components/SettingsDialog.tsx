@@ -4,6 +4,7 @@ import { Modal } from './Modal';
 import { RhythmPicker } from './RhythmPicker';
 import { useStore } from '../store';
 import { parseHHMM } from '../lib/time';
+import { downloadBackup } from '../lib/download';
 import type { Settings } from '../types';
 
 type NumericKey = {
@@ -35,9 +36,9 @@ function NumberField({ label, unit, value, min, max, onChange }: { label: string
   );
 }
 
-export function SettingsDialog({ onClose }: { onClose(): void }) {
+export function SettingsDialog({ onClose, signedIn = false }: { onClose(): void; signedIn?: boolean }) {
   const settings = useStore((s) => s.settings);
-  const { exportData, importData, updateSettings } = useStore.getState();
+  const { importData, updateSettings } = useStore.getState();
   const [draft, setDraft] = useState<Settings>(settings);
   const [nums, setNums] = useState<Record<string, string>>(() =>
     Object.fromEntries([...PLANNER_FIELDS, ...TIMER_FIELDS].map((f) => [f.key, String(settings[f.key])])),
@@ -75,14 +76,7 @@ export function SettingsDialog({ onClose }: { onClose(): void }) {
     onClose();
   };
 
-  const download = () => {
-    const blob = new Blob([exportData()], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `studycal-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  };
+  const download = downloadBackup;
 
   const restore = async (file: File | undefined) => {
     setDataMsg(null);
@@ -167,7 +161,10 @@ export function SettingsDialog({ onClose }: { onClose(): void }) {
 
       <section className="settings-section">
         <h3>Your data</h3>
-        <p className="muted small">Everything is stored in this browser only. Download a backup to move it to another device or keep it safe.</p>
+        <p className="muted small">
+          Your planner is stored in this browser{signedIn ? ' and synced to your account' : ' only'}. Download a backup to keep a copy safe
+          {signedIn ? '' : ' or move it to another device (or sign in to sync)'}.
+        </p>
         <div className="row">
           <button type="button" onClick={download}>
             <Download size={15} /> Download backup

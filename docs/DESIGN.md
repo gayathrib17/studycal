@@ -4,7 +4,7 @@ How studycal works under the hood and why it's built the way it is. For using th
 
 ## Architecture
 
-- **Client-only React app** (Vite + React + TypeScript). There is no server. Everything a person creates is kept in their browser's local storage through one [zustand](https://github.com/pmndrs/zustand) store, `src/store.ts`.
+- **React app** (Vite + React + TypeScript), served as static files. Everything a person creates is kept in their browser's local storage through one [zustand](https://github.com/pmndrs/zustand) store, `src/store.ts`. Signed-in people's planners are also synced to Supabase. See *Cloud sync* below.
 - **Pure logic lives in `src/lib/`** and is what the unit tests cover:
   - `scheduler.ts`: the planner.
   - `ics.ts`: calendar import and recurrence expansion.
@@ -17,7 +17,17 @@ How studycal works under the hood and why it's built the way it is. For using th
 
 **Calendar: FullCalendar v6 (MIT-licensed parts only).** Building a week view with drag, drop, resize, snapping, time zones and a "now" line from scratch would take weeks and be full of edge cases. FullCalendar handles all of it and supports dropping items from outside the calendar (our task list). We hide its default toolbar and draw our own, so it looks like part of the app rather than a library. v6 rather than v7 because v7 had only just come out, and only the free MIT plugins are used.
 
-**Data stays in the browser (localStorage) for now.** Friends can start instantly with no sign-up, there's no server to run or pay for, and there's no personal data held anywhere central. The store (`zustand` with `persist`) is the only place data is saved, so moving to a real backend later means changing one file. The downsides: no sync between devices, and localStorage only holds a few MB (calendar imports are capped at 2 MB). Backups cover the gap for now.
+**Browser first.** People can start instantly with no sign-up and nothing to run on a server. The store (`zustand` with `persist`) is the single place data lives on a device. Cloud sync sits beside it for people who sign in. localStorage only holds a few MB, so calendar imports are capped at 2 MB.
+
+**Cloud sync: optional, one row per person, never silently overwritten.**
+- **Optional.** Signing in is never required. Without an account the app behaves exactly as before, and the browser stays the source of truth on each device.
+- **Storage.** Each signed-in person has one row in `planner_state` holding their whole planner as JSON. Row-level security (`supabase/schema.sql`) lets a person read and write only their own row, and anonymous visitors get nothing. That's why the Supabase URL and *publishable* key can live in the public code (`src/config.ts`).
+- **Saving.** Edits are saved 1.5 s after the last change. Every save carries a version number and only succeeds if nobody else saved in between (optimistic concurrency).
+- **Conflicts.** If two devices change things at the same time, the person is asked which copy to keep, rather than one quietly overwriting the other.
+- **Picking up changes.** Other devices pull new data when the tab regains focus, comes back online, or every 30 s while visible.
+- **Offline.** Edits are kept and sent once the connection returns.
+- **Sign-in.** Email + password rather than email login links, because Supabase's free plan only sends a few emails an hour.
+- **Code.** The sync rules live in `src/lib/sync.ts` (pure and unit-tested against an in-memory database); `src/lib/syncBackend.ts` is the Supabase adapter and `src/useSync.ts` wires it to the app.
 
 **Calendars via `.ics` files and links, not Google/Microsoft sign-in (yet).** Every calendar app, including university timetable systems, can export `.ics`, so one feature covers Google, Outlook, Apple and uni timetables. Subscription links work when the calendar server allows websites to read them. Many uni servers don't (a browser rule called CORS), and the app explains this and suggests downloading the file instead. A tiny server-side fetcher would remove that limit. Parsing uses `ical.js` (from Mozilla's Thunderbird team), which correctly handles repeating events, skipped weeks, moved lectures and time zones.
 
@@ -64,7 +74,8 @@ Generic AI-generated sites share a few tells: purple-to-pink gradients, emoji us
 
 | When | Feature | Why it matters |
 | --- | --- | --- |
-| Next | **Accounts + cloud sync** (e.g. Supabase: Postgres + auth, generous free tier) | Right now each browser has its own data, so your phone and laptop don't match, and clearing site data wipes everything. |
+| Done | **Accounts + cloud sync** (Supabase) | Planner follows you between devices. See *Cloud sync* above. |
+| Next | **Password reset and self-service account deletion** | Both need the sign-in service to send emails reliably, so a custom email provider first. |
 | Next | **Live Google / Outlook calendar sync** (OAuth) | Imports are snapshots. Needs a registered Google/Microsoft app, plus Google's verification process for public use. |
 | Next | **Server-side calendar fetching** | A tiny serverless function to fetch uni `webcal://` links that block browsers, and refresh them daily. |
 | Next | **Installable app + real notifications** (PWA, service worker, Web Push) | Reminders currently only fire while the tab is open. |

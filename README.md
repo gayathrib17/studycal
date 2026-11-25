@@ -26,10 +26,12 @@ Uni timetables, deadlines and "I should really revise for that" don't live in th
 - **Focus timer.** Start any session for a focus and break timer. A flower grows as you focus.
 - **Weekly garden.** Every finished session plants a flower: each subject has its own flower and colour, and longer sessions grow bigger ones. A new garden starts every Monday.
 - **Reminders** when a session or event starts (while the site is open), with optional desktop notifications.
+- **Optional account** to keep your planner in sync between your phone and laptop.
 - **Works on your phone.** Once the page is open, it keeps working without an internet connection.
 
 ## How to use it
 
+0. **(Optional) Sign in.** Click **Sign in** (top right) → *Create an account* to keep your planner in sync across devices. You can skip this and use studycal without an account.
 1. **Add your timetable.** Click **Calendars** (top right). Upload an `.ics` file, or paste a subscription link (`webcal://…` or `https://….ics`).
    - *Uni timetable:* look for "Subscribe", "Export to calendar" or "iCal" in your timetable portal.
    - *Google Calendar:* Settings → your calendar → *Integrate calendar* → "Secret address in iCal format".
@@ -49,21 +51,29 @@ Uni timetables, deadlines and "I should really revise for that" don't live in th
 - **Changed your mind?** Deleting or hiding anything shows an **Undo** button.
 - **Re-plan anytime.** After changing your study hours or rhythm, run **Plan my week** again with "Rearrange" ticked. Sessions the planner placed move, and anything you placed yourself stays put.
 - **Settings** (gear icon): study hours, meal times, how long sessions and breaks are, and how much to study per day.
-- **Back up your data** from Settings → *Your data* now and then, or to move to another device (see below).
+- **Back up your data** from Settings → *Your data* now and then. Without an account, a backup is also how you move to another device.
 
 ## Your data and privacy
 
-- Everything you add (tasks, sessions, events and imported calendars) is stored **only in your own browser** on the device you're using. It isn't sent to a server, and nobody else can see it.
-- Because of that, your phone and laptop don't share data yet. Use **Download backup** and **Restore backup** in Settings to move between devices.
-- Clearing your browser's site data for studycal deletes your planner, so keep a backup.
-- No accounts, no ads, no tracking. Fonts are bundled with the site, so no third party is contacted when you visit.
-- Optional sign-in with sync across devices is planned.
+**Without an account** (the default), everything you add is stored **only in your own browser** on that device. It isn't sent anywhere, and clearing your browser's site data deletes it, so keep a backup.
+
+**With an account** (optional), your planner is also saved to studycal's database so it can follow you between devices:
+
+- **What's stored:** your email address, your password (stored securely by the sign-in service, never in plain text) and your planner (tasks, sessions, events, imported calendars and settings).
+- **Who can see it:** only you. The database only lets each signed-in person read and change their own planner. The person who runs this copy of studycal manages the database, so don't store anything sensitive in it.
+- **Where:** the database is hosted by [Supabase](https://supabase.com).
+- **Signing out:** on a shared computer, tick *Also remove my planner from this device* when you sign out.
+- **Deleting your account:** there's no self-service option yet. Ask the person who shared studycal with you, or [open an issue](https://github.com/gayathrib17/studycal/issues).
+
+No ads and no tracking. Fonts are bundled with the site, so no third party is contacted just by visiting.
 
 ## Good to know
 
 - Reminders only work while studycal is open in a tab.
 - All-day imported events (holidays, birthdays) are shown but don't block study time.
 - Subscribed calendars don't update by themselves. Press **Refresh** next to a calendar in **Calendars** to pull changes.
+- There's no "forgot password" yet, so keep your password somewhere safe.
+- Signed in on two devices? Changes appear on the other device within about 30 seconds, or as soon as you switch back to it. If both devices were changed at the same moment, studycal asks which version to keep rather than overwriting either.
 
 ---
 
@@ -91,6 +101,10 @@ npm run dev          # http://localhost:5173
 
 studycal is a static website, so any static host works. The build uses relative paths, so it can live at a domain root or a sub-path. Both included pipelines run the type check and tests before publishing.
 
+**Accounts and sync are optional.** `src/config.ts` points at this project's Supabase database. For your own copy, either:
+- create a free Supabase project, run [`supabase/schema.sql`](supabase/schema.sql) in its SQL editor, and build with `VITE_SUPABASE_URL` and `VITE_SUPABASE_KEY` (the *publishable* key, never the secret one) set to your project's values, or
+- set both to an empty string to turn sign-in off.
+
 - **GitHub Pages** (`.github/workflows/deploy.yml`): in your repository, go to **Settings → Pages → Source: GitHub Actions**, then push to `main`. The site appears at `https://<user>.github.io/<repo>/`.
 - **GitLab Pages** (`.gitlab-ci.yml`): push to your project's default branch. The link is under **Deploy → Pages**. Set Pages visibility to *Everyone* to share it.
 
@@ -98,7 +112,7 @@ studycal is a static website, so any static host works. The build uses relative 
 
 - React + TypeScript, built with Vite.
 - The calendar is [FullCalendar](https://fullcalendar.io/) (MIT parts only), and calendar files are read with [ical.js](https://github.com/kewisch/ical.js).
-- State lives in a single [zustand](https://github.com/pmndrs/zustand) store, saved to local storage.
+- State lives in a single [zustand](https://github.com/pmndrs/zustand) store, saved to local storage. Signed-in planners are also synced to [Supabase](https://supabase.com) (Postgres with row-level security).
 - The planner, calendar import, garden and timer logic are plain TypeScript in `src/lib/`, covered by unit tests.
 
 [docs/DESIGN.md](docs/DESIGN.md) explains how the planner decides where sessions go, why the app is built the way it is, the design principles, and the roadmap.

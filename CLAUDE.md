@@ -27,6 +27,13 @@ Data model (`src/types.ts`):
 - **CalEvent** is a user-created event or reminder (click on empty calendar time). It counts as busy time for the planner.
 - **ImportedCalendar** stores raw `.ics` text plus `hidden` (occurrence keys `uid|recurrence-id`) and `hiddenSeries` (UIDs). Occurrences are expanded on demand for the visible range by `expandCalendars` in `src/lib/ics.ts`, which applies the hides and caches parses per calendar id + text. They are never persisted.
 
+Cloud sync (optional; on when `src/config.ts` has a Supabase URL + publishable key):
+- `src/lib/sync.ts` is a pure `SyncEngine` (unit-tested with an in-memory backend). It handles version-guarded saves, a "choose" status instead of overwriting when both sides changed, and offline retry. Backends throw `SyncServerError` for server refusals; anything else counts as offline.
+- `src/lib/syncBackend.ts` is the Supabase adapter (table `planner_state`, schema and row-level security in `supabase/schema.sql`).
+- `src/useSync.ts` wires sync to the store: it subscribes to the persisted slices and suppresses echoes while applying remote data. On sign-out it must flush and stop the engine **before** clearing local data, or the cleared planner is uploaded over the cloud copy.
+- Per-device sync metadata lives in localStorage key `studycal-sync`, and the auth session in `studycal-auth`.
+- Never put a secret or service_role key in the code.
+
 Undo: destructive store actions go through `withUndo(message, change, undo)`, where `undo` must reverse only that action (use `restoreAt` / `restoreAll`). Don't restore whole snapshots: an older toast's Undo would wipe later edits (covered by `src/store.test.ts`). The one exception is `importData`, which replaces everything by design.
 
 Pure logic in `src/lib/` is what the unit tests cover:

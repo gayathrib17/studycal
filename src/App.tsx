@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CalendarDays, Settings as SettingsIcon, Sparkles } from 'lucide-react';
+import { AccountButton, AccountDialog, AuthDialog, SyncChoiceDialog } from './components/Account';
+import { useSync } from './useSync';
 import { nextColor, useStore } from './store';
 import { TaskForm } from './components/TaskForm';
 import { TaskList } from './components/TaskList';
@@ -27,6 +29,7 @@ type Dialog =
   | { kind: 'event'; mode: EventDialogMode }
   | { kind: 'busy'; event: BusyEvent }
   | { kind: 'editTask'; task: Task }
+  | { kind: 'account' }
   | null;
 
 export default function App() {
@@ -37,6 +40,7 @@ export default function App() {
   const [dialog, setDialog] = useState<Dialog>(null);
   const close = () => setDialog(null);
   useReminders();
+  const sync = useSync();
 
   // Leaving with an unaccepted plan would silently lose it.
   useEffect(() => {
@@ -57,6 +61,7 @@ export default function App() {
           <span className="wordmark">studycal</span>
         </div>
         <nav className="top-actions">
+          <AccountButton sync={sync} onOpen={() => setDialog({ kind: 'account' })} />
           <button className="ghost" onClick={() => setDialog({ kind: 'import' })}>
             <CalendarDays size={16} /> <span className="hide-sm">Calendars</span>
           </button>
@@ -136,7 +141,9 @@ export default function App() {
       {dialog?.kind === 'busy' && <BusyDialog event={dialog.event} onClose={close} />}
       {dialog?.kind === 'import' && <ImportDialog onClose={close} />}
       {dialog?.kind === 'plan' && <PlanDialog onClose={close} />}
-      {dialog?.kind === 'settings' && <SettingsDialog onClose={close} />}
+      {dialog?.kind === 'settings' && <SettingsDialog onClose={close} signedIn={Boolean(sync.user)} />}
+      {dialog?.kind === 'account' && (sync.user ? <AccountDialog sync={sync} onClose={close} /> : <AuthDialog sync={sync} onClose={close} />)}
+      <SyncChoiceDialog sync={sync} />
       {dialog?.kind === 'editTask' && (
         <Modal title="Edit task" onClose={close}>
           <TaskForm
