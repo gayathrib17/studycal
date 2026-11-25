@@ -104,6 +104,8 @@ export interface Settings {
   /** Spread work evenly over the horizon instead of filling the earliest days first. */
   spreadEvenly: boolean;
   remindersEnabled: boolean;
+  /** The first-visit tour was finished or skipped (syncs with the account, so it shows once per person). */
+  tutorialDone: boolean;
 }
 
 export interface PomodoroPhase {

@@ -29,6 +29,7 @@ export const DEFAULT_SETTINGS: Settings = {
   dinnerEnd: '19:30',
   spreadEvenly: true,
   remindersEnabled: true,
+  tutorialDone: false,
 };
 
 export const newId = () => crypto.randomUUID();

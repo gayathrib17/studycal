@@ -54,6 +54,8 @@ Task cards (`TaskList.tsx`) carry two drag systems on separate elements:
 - `.cal-drag` body: FullCalendar `Draggable`, which reads `data-*` at drag time.
 - `.grip`: native HTML5 drag and drop for priority reordering.
 
+Intro tour (`src/components/Tour.tsx`): steps point at elements by `data-tour` attribute (`calendars`, `tasks`, `plan`, `calendar`). Keep those attributes when moving UI around. It shows while `settings.tutorialDone` is false, so it syncs with the account. Browser test scripts must dismiss it (Escape) after loading with fresh storage.
+
 zustand v5: selectors must not return fresh arrays or objects (e.g. `s.tasks.filter(...)`). That loops renders. Select the stable value and derive outside.
 
 ## Design rules (see docs/DESIGN.md "Design principles")

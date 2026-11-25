@@ -16,6 +16,7 @@ import { PomodoroPanel } from './components/PomodoroPanel';
 import { Garden } from './components/Garden';
 import { Toasts } from './components/Toasts';
 import { Logo } from './components/Logo';
+import { Tour } from './components/Tour';
 import { Modal } from './components/Modal';
 import { useReminders } from './useReminders';
 import { formatMinutes } from './lib/time';
@@ -41,6 +42,12 @@ export default function App() {
   const close = () => setDialog(null);
   useReminders();
   const sync = useSync();
+  // First visit: show the intro tour once (remembered in settings, so it syncs with the account).
+  const [touring, setTouring] = useState(() => !useStore.getState().settings.tutorialDone);
+  const endTour = () => {
+    setTouring(false);
+    useStore.getState().updateSettings({ tutorialDone: true });
+  };
 
   // Leaving with an unaccepted plan would silently lose it.
   useEffect(() => {
@@ -62,10 +69,10 @@ export default function App() {
         </div>
         <nav className="top-actions">
           <AccountButton sync={sync} onOpen={() => setDialog({ kind: 'account' })} />
-          <button className="ghost" onClick={() => setDialog({ kind: 'import' })}>
+          <button className="ghost" data-tour="calendars" onClick={() => setDialog({ kind: 'import' })}>
             <CalendarDays size={16} /> <span className="hide-sm">Calendars</span>
           </button>
-          <button className="primary" onClick={() => setDialog({ kind: 'plan' })}>
+          <button className="primary" data-tour="plan" onClick={() => setDialog({ kind: 'plan' })}>
             <Sparkles size={16} /> <span>Plan my week</span>
           </button>
           <button className="icon-btn" onClick={() => setDialog({ kind: 'settings' })} aria-label="Settings" title="Settings">
@@ -77,7 +84,7 @@ export default function App() {
       <main className="layout">
         <aside className="sidebar">
           <Garden />
-          <section className="tasks">
+          <section className="tasks" data-tour="tasks">
             <h2 className="section-title">
               Tasks {activeCount > 0 && <span className="count">{activeCount}</span>}
             </h2>
@@ -124,12 +131,14 @@ export default function App() {
               </div>
             </div>
           )}
+          <div className="calendar-slot" data-tour="calendar">
           <CalendarView
             onOpenSession={(id) => setDialog({ kind: 'session', id })}
             onOpenEvent={(id) => setDialog({ kind: 'event', mode: { kind: 'edit', id } })}
             onOpenBusy={(event) => setDialog({ kind: 'busy', event })}
             onCreate={(start, end) => setDialog({ kind: 'event', mode: { kind: 'new', start, end } })}
           />
+          </div>
         </section>
       </main>
 
@@ -141,7 +150,17 @@ export default function App() {
       {dialog?.kind === 'busy' && <BusyDialog event={dialog.event} onClose={close} />}
       {dialog?.kind === 'import' && <ImportDialog onClose={close} />}
       {dialog?.kind === 'plan' && <PlanDialog onClose={close} />}
-      {dialog?.kind === 'settings' && <SettingsDialog onClose={close} signedIn={Boolean(sync.user)} />}
+      {dialog?.kind === 'settings' && (
+        <SettingsDialog
+          onClose={close}
+          signedIn={Boolean(sync.user)}
+          onReplayTour={() => {
+            close();
+            setTouring(true);
+          }}
+        />
+      )}
+      {touring && <Tour onDone={endTour} />}
       {dialog?.kind === 'account' && (sync.user ? <AccountDialog sync={sync} onClose={close} /> : <AuthDialog sync={sync} onClose={close} />)}
       <SyncChoiceDialog sync={sync} />
       {dialog?.kind === 'editTask' && (

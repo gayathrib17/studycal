@@ -357,6 +357,35 @@ input[type='number']::-webkit-inner-spin-button { opacity: 0.4; }
 .focus-clock { font-family: var(--font-serif); font-size: 38px; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; line-height: 1.1; margin: 4px 0 12px; }
 .focus-actions { display: flex; gap: 8px; justify-content: center; }
 
+/* ───────────── Intro tour ───────────── */
+.calendar-slot { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.tour { position: fixed; inset: 0; z-index: 80; }
+.tour-blocker { position: absolute; inset: 0; }
+.tour-blocker.dim { background: rgba(31, 42, 36, 0.42); animation: fade 0.2s ease-out; }
+.tour-spotlight {
+  position: fixed; border-radius: 14px; pointer-events: none;
+  box-shadow: 0 0 0 2px rgba(251, 248, 241, 0.9), 0 0 0 9999px rgba(31, 42, 36, 0.42);
+  transition: top 0.3s var(--ease), left 0.3s var(--ease), width 0.3s var(--ease), height 0.3s var(--ease);
+}
+.tour-card {
+  position: fixed; width: min(340px, calc(100vw - 24px)); padding: 18px 18px 14px;
+  background: var(--surface); border-radius: var(--r-lg); box-shadow: var(--shadow-float);
+  animation: rise 0.22s var(--ease);
+}
+.tour-card.sheet { left: 12px; right: 12px; bottom: 12px; width: auto; }
+.tour-card.sheet.top { top: 12px; bottom: auto; }
+.tour-card h2 { font-family: var(--font-serif); font-size: 20px; font-weight: 600; letter-spacing: -0.01em; margin: 2px 0 8px; }
+.tour-count { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.tour-body { display: flex; flex-direction: column; gap: 8px; color: var(--ink-2); }
+.tour-body code { font-size: 12.5px; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+.tour-flower { display: block; width: 64px; height: 60px; margin: -4px 0 6px -6px; }
+.inline-icon { display: inline-block; vertical-align: -2px; }
+.tour-actions { display: flex; align-items: center; gap: 6px; margin-top: 14px; }
+.tour-actions button { height: 34px; }
+.tour-dots { display: flex; gap: 5px; }
+.tour-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--line-strong); transition: background 0.2s, width 0.2s; }
+.tour-dots span.on { width: 16px; border-radius: 3px; background: var(--forest); }
+
 /* ───────────── Toasts ───────────── */
 .toasts { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 60; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
 .toast {

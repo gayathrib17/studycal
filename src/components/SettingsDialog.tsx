@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Download, Upload } from 'lucide-react';
+import { Download, PlayCircle, Upload } from 'lucide-react';
 import { Modal } from './Modal';
 import { RhythmPicker } from './RhythmPicker';
 import { useStore } from '../store';
@@ -36,7 +36,15 @@ function NumberField({ label, unit, value, min, max, onChange }: { label: string
   );
 }
 
-export function SettingsDialog({ onClose, signedIn = false }: { onClose(): void; signedIn?: boolean }) {
+export function SettingsDialog({
+  onClose,
+  signedIn = false,
+  onReplayTour,
+}: {
+  onClose(): void;
+  signedIn?: boolean;
+  onReplayTour?(): void;
+}) {
   const settings = useStore((s) => s.settings);
   const { importData, updateSettings } = useStore.getState();
   const [draft, setDraft] = useState<Settings>(settings);
@@ -176,6 +184,17 @@ export function SettingsDialog({ onClose, signedIn = false }: { onClose(): void;
         </div>
         {dataMsg && <p className="error">{dataMsg}</p>}
       </section>
+
+      {onReplayTour && (
+        <section className="settings-section">
+          <h3>Help</h3>
+          <div className="row">
+            <button type="button" onClick={onReplayTour}>
+              <PlayCircle size={15} /> Show the intro again
+            </button>
+          </div>
+        </section>
+      )}
 
       {error && <p className="error">{error}</p>}
       <div className="dialog-actions">

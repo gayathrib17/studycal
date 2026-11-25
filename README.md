@@ -31,6 +31,8 @@ Uni timetables, deadlines and "I should really revise for that" don't live in th
 
 ## How to use it
 
+The first time you open studycal, a short intro points out each of these. You can skip it, and replay it any time from Settings → *Show the intro again*.
+
 0. **(Optional) Sign in.** Click **Sign in** (top right) → *Create an account* to keep your planner in sync across devices. You can skip this and use studycal without an account.
 1. **Add your timetable.** Click **Calendars** (top right). Upload an `.ics` file, or paste a subscription link (`webcal://…` or `https://….ics`).
    - *Uni timetable:* look for "Subscribe", "Export to calendar" or "iCal" in your timetable portal.
